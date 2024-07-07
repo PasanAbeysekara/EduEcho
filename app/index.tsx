@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, Image } from 'react-native';
 import { useRouter } from 'expo-router';
+import * as Animatable from 'react-native-animatable';
 
 const Index: React.FC = () => {
   const router = useRouter();
@@ -13,8 +14,18 @@ const Index: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <Image source={require('../assets/images/logo.png')} style={styles.logo} />
-      <Text style={styles.version}>Version Info</Text>
+      <Animatable.Image
+        animation="bounceIn"
+        duration={2000}
+        source={require('../assets/images/logo.png')}
+        style={styles.logo}
+      />
+      <Animatable.Text animation="fadeInUp" duration={2000} style={styles.version}>
+        Version Info
+      </Animatable.Text>
+      <Animatable.Text animation="fadeInUp" duration={2000} style={styles.developerName}>
+        Developed by Chamil Abeysekara
+      </Animatable.Text>
     </View>
   );
 };
@@ -31,6 +42,11 @@ const styles = StyleSheet.create({
     height: 100,
   },
   version: {
+    position: 'absolute',
+    bottom: 30,
+    fontSize: 12,
+  },
+  developerName: {
     position: 'absolute',
     bottom: 10,
     fontSize: 12,

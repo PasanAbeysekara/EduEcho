@@ -12,15 +12,28 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.pasan_kavinda.eduecho",
+      "buildNumber": "1.0.0"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.pasan_kavinda.eduecho"
+      "package": "com.pasan_kavinda.eduecho",
+      "versionCode": 1,
+      "permissions": [
+        "NOTIFICATIONS",
+        "RECEIVE_BOOT_COMPLETED"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -29,7 +42,14 @@
     },
     "plugins": [
       "expo-router",
-      "expo-secure-store"
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification/notification-icon.png",
+          "color": "#ffffff",
+          "sounds": ["./assets/notification/notification-sound.mp3"]
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
@@ -39,7 +59,7 @@
         "origin": false
       },
       "eas": {
-        "projectId": "bd3139bd-2542-4acb-b828-814d4e4aec95"
+        "projectId": "57f000c4-c209-4d49-a312-eeae894f3091"
       }
     }
   }

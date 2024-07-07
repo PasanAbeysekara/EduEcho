@@ -1,20 +1,29 @@
 import React, { useState } from 'react';
 import { View, TextInput, Button, StyleSheet, Image, Text, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../firebaseConfig';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { auth, db } from '../firebaseConfig';
+import { doc, setDoc } from 'firebase/firestore';
 
-const LoginScreen: React.FC = () => {
+const SignUpScreen: React.FC = () => {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
 
-  const handleLogin = async () => {
+  const handleSignUp = async () => {
     setError(null); // Reset error message
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      router.push('/screens/Dashboard');
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Save user info to Firestore
+      await setDoc(doc(db, 'users', user.uid), {
+        email: user.email,
+        createdAt: new Date()
+      });
+
+      router.push('/screens/LoginScreen');
     } catch (error: any) {
       setError(error.message);
     }
@@ -23,7 +32,7 @@ const LoginScreen: React.FC = () => {
   return (
     <View style={styles.container}>
       <Image source={require('../../assets/images/logo.png')} style={styles.logo} />
-      <Text style={styles.title}>Log In</Text>
+      <Text style={styles.title}>Sign Up</Text>
       <TextInput
         placeholder="Email"
         style={styles.input}
@@ -40,12 +49,12 @@ const LoginScreen: React.FC = () => {
         placeholderTextColor="#999"
       />
       {error && <Text style={styles.errorText}>{error}</Text>}
-      <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Log In</Text>
-      </TouchableOpacity>
-      <Text style={styles.orText}>Don't have an account?</Text>
-      <TouchableOpacity style={[styles.button, styles.signupButton]} onPress={() => router.push('/screens/SignUpScreen')}>
+      <TouchableOpacity style={styles.button} onPress={handleSignUp}>
         <Text style={styles.buttonText}>Sign Up</Text>
+      </TouchableOpacity>
+      <Text style={styles.orText}>Already have an account?</Text>
+      <TouchableOpacity style={[styles.button, styles.loginButton]} onPress={() => router.push('/screens/LoginScreen')}>
+        <Text style={styles.buttonText}>Go to Login</Text>
       </TouchableOpacity>
     </View>
   );
@@ -116,7 +125,7 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
   },
-  signupButton: {
+  loginButton: {
     backgroundColor: '#34C759',
   },
   buttonText: {
@@ -126,4 +135,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default LoginScreen;
+export default SignUpScreen;

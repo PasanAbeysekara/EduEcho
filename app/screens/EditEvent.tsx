@@ -1,39 +1,75 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SafeAreaView, View, Text, TextInput, Button, StyleSheet, Switch, ScrollView } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
+import { db, auth } from '../firebaseConfig';
+import { doc, updateDoc, deleteDoc } from 'firebase/firestore';
 
-const AddEditEvent: React.FC = () => {
+const EditEvent: React.FC = () => {
   const router = useRouter();
-  const { eventName, location, coordinates, notes, date, time, priority, reminders, mode } = useLocalSearchParams();
+  const { eventId, eventName, location, coordinates, notes, date, time, priority, reminders, repeat } = useLocalSearchParams();
 
   const [eventData, setEventData] = useState({
-    eventName: eventName?.toString() || '',
-    location: location?.toString() || '',
-    coordinates: coordinates?.toString() || '',
-    notes: notes?.toString() || '',
-    date: date?.toString() || '',
-    time: time?.toString() || '',
-    priority: priority?.toString() || '',
-    reminders: reminders?.toString() || '',
+    eventName: '',
+    location: '',
+    coordinates: '',
+    notes: '',
+    date: '',
+    time: '',
+    priority: '',
+    reminders: '',
     repeat: false
   });
 
-  const handleSave = () => {
-    // Save event logic here
-    console.log('Event saved:', eventData);
-    router.push('/screens/Dashboard');
+  useEffect(() => {
+    setEventData({
+      eventName: eventName as string,
+      location: location as string,
+      coordinates: coordinates as string,
+      notes: notes as string,
+      date: date as string,
+      time: time as string,
+      priority: priority as string,
+      reminders: reminders as string,
+      repeat: repeat === 'true'
+    });
+  }, [eventId, eventName, location, coordinates, notes, date, time, priority, reminders, repeat]);
+
+  const handleSave = async () => {
+    try {
+      if (!auth.currentUser) {
+        console.error('User not authenticated');
+        return;
+      }
+
+      const updatedEventData = { ...eventData, userId: auth.currentUser.uid };
+
+      if (eventId) {
+        const eventRef = doc(db, 'events', eventId as string);
+        await updateDoc(eventRef, updatedEventData);
+        console.log('Event updated successfully:', updatedEventData);
+      }
+      router.push('/screens/Dashboard');
+    } catch (error) {
+      console.error('Error updating event:', error);
+    }
   };
 
-  const handleDelete = () => {
-    // Delete event logic here
-    console.log('Event deleted');
-    router.push('/screens/Dashboard');
+  const handleDelete = async () => {
+    try {
+      if (eventId) {
+        const eventRef = doc(db, 'events', eventId as string);
+        await deleteDoc(eventRef);
+      }
+      router.push('/screens/Dashboard');
+    } catch (error) {
+      console.error('Error deleting event:', error);
+    }
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>{mode === 'edit' ? 'Edit Event' : 'Add Event'}</Text>
+        <Text style={styles.title}>Edit Event</Text>
         <View style={styles.inputContainer}>
           <Text>Event Name:</Text>
           <TextInput
@@ -90,8 +126,8 @@ const AddEditEvent: React.FC = () => {
           />
         </View>
         <View style={styles.buttonContainer}>
-          {mode === 'edit' && <Button title="Delete" onPress={handleDelete} color="#FF3B30" />}
-          <Button title={mode === 'edit' ? 'Save' : 'Add'} onPress={handleSave} color="#34C759" />
+          <Button title="Delete" onPress={handleDelete} color="#FF3B30" />
+          <Button title="Save" onPress={handleSave} color="#34C759" />
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -132,4 +168,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AddEditEvent;
+export default EditEvent;

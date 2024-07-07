@@ -29,9 +29,9 @@ const Settings: React.FC = () => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container}>
-        <Button title="Back" onPress={() => router.back()} color="#007AFF" />
+        {/* <Button title="Back" onPress={() => router.back()} color="#007AFF" /> */}
         <Text style={styles.title}>Settings</Text>
-        <View style={styles.section}>
+        {/* <View style={styles.section}>
           <Text style={styles.sectionTitle}>Profile</Text>
           <Text>Name:</Text>
           <TextInput
@@ -39,7 +39,7 @@ const Settings: React.FC = () => {
             value={settingsData.name}
             onChangeText={(text) => setSettingsData({ ...settingsData, name: text })}
           />
-        </View>
+        </View> */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Notifications</Text>
           <Text>Event Reminders:</Text>

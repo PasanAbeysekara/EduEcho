@@ -8,7 +8,7 @@ const EventDetails: React.FC = () => {
 
   const handleEdit = () => {
     router.push({
-      pathname: '/screens/AddEditEvent',
+      pathname: '/screens/EditEvent',
       params: {
         eventName,
         location,
