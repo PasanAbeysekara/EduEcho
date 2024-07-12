@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { SafeAreaView, View, Text, TextInput, Button, StyleSheet, Switch, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
+import { signOut } from 'firebase/auth';
+import { auth } from '../firebaseConfig';
 
 const Settings: React.FC = () => {
   const router = useRouter();
@@ -11,7 +13,6 @@ const Settings: React.FC = () => {
     silentHoursTo: '',
     oldPassword: '',
     newPassword: '',
-    email: ''
   });
 
   const handleSave = () => {
@@ -20,26 +21,19 @@ const Settings: React.FC = () => {
     // Optionally navigate back or show a confirmation
   };
 
-  const handleLogout = () => {
-    // Logout logic here
-    console.log('Logged out');
-    router.push('/screens/LoginScreen');
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      router.push('/screens/LoginScreen');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container}>
-        {/* <Button title="Back" onPress={() => router.back()} color="#007AFF" /> */}
         <Text style={styles.title}>Settings</Text>
-        {/* <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Profile</Text>
-          <Text>Name:</Text>
-          <TextInput
-            style={styles.input}
-            value={settingsData.name}
-            onChangeText={(text) => setSettingsData({ ...settingsData, name: text })}
-          />
-        </View> */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Notifications</Text>
           <Text>Event Reminders:</Text>
@@ -82,12 +76,7 @@ const Settings: React.FC = () => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Help & Support</Text>
           <Text>Contact Us:</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Email"
-            value={settingsData.email}
-            onChangeText={(text) => setSettingsData({ ...settingsData, email: text })}
-          />
+          <Text style={styles.contactEmail}>support@eduecho.com</Text>
         </View>
         <View style={styles.buttonContainer}>
           <Button title="Log Out" onPress={handleLogout} color="#FF3B30" />
@@ -129,6 +118,11 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 10,
     borderRadius: 5,
+  },
+  contactEmail: {
+    fontSize: 16,
+    color: '#007AFF',
+    marginTop: 10,
   },
   buttonContainer: {
     flexDirection: 'row',

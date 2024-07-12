@@ -1,15 +1,18 @@
 import React from 'react';
 import { SafeAreaView, View, Text, StyleSheet, ScrollView, Button } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
+import { db, auth } from '../firebaseConfig';
+import { doc, deleteDoc } from 'firebase/firestore';
 
 const EventDetails: React.FC = () => {
   const router = useRouter();
-  const { eventName, location, coordinates, notes, date, time, priority, reminders } = useLocalSearchParams();
+  const { eventId, eventName, location, coordinates, notes, date, time, priority, reminders } = useLocalSearchParams();
 
   const handleEdit = () => {
     router.push({
       pathname: '/screens/EditEvent',
       params: {
+        eventId,
         eventName,
         location,
         coordinates,
@@ -21,6 +24,29 @@ const EventDetails: React.FC = () => {
         mode: 'edit',
       },
     });
+  };
+
+  const handleDelete = async () => {
+    try {
+      if (!eventId) {
+        console.error('Event ID is missing');
+        return;
+      }
+
+      const user = auth.currentUser;
+      if (!user) {
+        console.error('User not authenticated');
+        return;
+      }
+
+      const eventRef = doc(db, 'events', eventId as string);
+      await deleteDoc(eventRef);
+
+      console.log('Event deleted successfully');
+      router.push('/screens/Dashboard');
+    } catch (error) {
+      console.error('Error deleting event:', error);
+    }
   };
 
   return (
@@ -39,7 +65,7 @@ const EventDetails: React.FC = () => {
         </View>
         <View style={styles.buttonContainer}>
           <Button title="Edit" onPress={handleEdit} color="#007AFF" />
-          <Button title="Delete" onPress={() => {}} color="#FF3B30" />
+          <Button title="Delete" onPress={handleDelete} color="#FF3B30" />
         </View>
       </ScrollView>
     </SafeAreaView>

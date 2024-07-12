@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { SafeAreaView, View, Text, TextInput, Button, StyleSheet, ScrollView, Image } from 'react-native';
 import { useRouter } from 'expo-router';
-import { db, auth } from '../firebaseConfig'; // Ensure your firebaseConfig file is correctly set up
+import { db, auth } from '../firebaseConfig';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { signOut } from 'firebase/auth';
+import { Timestamp } from 'firebase/firestore';
 
 const Profile: React.FC = () => {
   const router = useRouter();
@@ -24,7 +26,14 @@ const Profile: React.FC = () => {
       const userDocRef = doc(db, 'users', auth.currentUser.uid);
       const userDoc = await getDoc(userDocRef);
       if (userDoc.exists()) {
-        setProfileData(userDoc.data() as typeof profileData);
+        const data = userDoc.data();
+        setProfileData({
+          name: data?.name || '',
+          email: data?.email || '',
+          phone: data?.phone || '',
+          address: data?.address || '',
+          accountCreated: data?.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleDateString() : '',
+        });
       } else {
         console.log('No such document!');
       }
@@ -33,6 +42,11 @@ const Profile: React.FC = () => {
     fetchProfileData();
   }, []);
 
+  const parseDateString = (dateString: string) => {
+    const [day, month, year] = dateString.split('/').map(Number);
+    return new Date(year, month - 1, day);
+  };
+
   const handleSave = async () => {
     try {
       if (!auth.currentUser) {
@@ -40,12 +54,31 @@ const Profile: React.FC = () => {
         return;
       }
 
+      const accountCreatedDate = parseDateString(profileData.accountCreated);
+
+      const updatedProfileData = {
+        name: profileData.name,
+        email: profileData.email,
+        phone: profileData.phone,
+        address: profileData.address,
+        createdAt: Timestamp.fromDate(accountCreatedDate),
+      };
+
       const userDocRef = doc(db, 'users', auth.currentUser.uid);
-      await setDoc(userDocRef, profileData);
-      console.log('Profile saved:', profileData);
-      // Optionally navigate back or show a confirmation
+      await setDoc(userDocRef, updatedProfileData, { merge: true });
+      console.log('Profile saved:', updatedProfileData);
+      router.push('/screens/Dashboard'); // Redirect to Dashboard after saving
     } catch (error) {
       console.error('Error saving profile:', error);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      router.push('/screens/LoginScreen');
+    } catch (error) {
+      console.error('Error signing out:', error);
     }
   };
 
@@ -88,6 +121,7 @@ const Profile: React.FC = () => {
         </View>
         <View style={styles.buttonContainer}>
           <Button title="Save" onPress={handleSave} color="#34C759" />
+          <Button title="Logout" onPress={handleLogout} color="#FF3B30" />
         </View>
       </ScrollView>
     </SafeAreaView>
